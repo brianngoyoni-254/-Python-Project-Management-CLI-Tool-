@@ -1,0 +1,26 @@
+[
+    {
+        "id": "0b052456-1d82-4626-a582-fd8ca924308e",
+        "title": "Build CLI",
+        "project_id": "3018170f-6a8f-4e9a-8f4c-353c6d2fd7ba",
+        "status": "Done"
+    },
+    {
+        "id": "cad60860-f6d4-4d7e-8e0c-3e54b318293a",
+        "title": "Implement Parser",
+        "project_id": "3018170f-6a8f-4e9a-8f4c-353c6d2fd7ba",
+        "status": "Pending"
+    },
+    {
+        "id": "8b35189a-2f0e-4b74-bfc0-9e231b60f779",
+        "title": "Implement Dashboard",
+        "project_id": "3018170f-6a8f-4e9a-8f4c-353c6d2fd7ba",
+        "status": "Pending"
+    },
+    {
+        "id": "2bb48c18-3891-4aed-a862-ebf2bb58cbb0",
+        "title": "Write Tests",
+        "project_id": "3018170f-6a8f-4e9a-8f4c-353c6d2fd7ba",
+        "status": "Pending"
+    }
+]
