@@ -1,33 +1,33 @@
 
 ---
+
 #  Project Management CLI Tool
 
 A Python-based Command-Line Interface (CLI) application for managing users, projects, and tasks in a structured multi-user system.
 
-The system demonstrates **Object-Oriented Programming (OOP)**, **file persistence**, **CLI design**, **input validation**, and **unit testing** using modern Python practices.
+The system demonstrates **Object-Oriented Programming (OOP)**, **service-layer architecture**, **file-based persistence (JSON)**, **input validation**, and **unit testing with pytest**.
 
 ---
 
-## Features
+##  Features
 
--  Create and manage users
--  Create projects linked to users
--  Create tasks linked to projects
-- Mark tasks as complete
-- Search projects and tasks
-- Dashboard summary view
-- JSON file persistence (local storage)
-- Strong OOP design with inheritance (BaseModel)
-- Unit testing with pytest
--  Clean CLI output using `rich`
--  Input validation using Pydantic
+*  Create and manage users
+* Create projects linked to users
+*  Create tasks linked to projects
+* Mark tasks as complete
+*  Search projects and tasks
+*  Dashboard-style summaries (optional module)
+*  JSON file persistence (local storage)
+*  Strong OOP design using `BaseModel`
+*  Unit testing with `pytest`
+*  Clean CLI output using `rich`
+*  Input validation using lightweight validators (Pydantic-based where applicable)
 
 ---
 
 ##  Project Structure
 
 ```
-
 project-management-cli/
 │
 ├── main.py
@@ -63,24 +63,24 @@ project-management-cli/
 ├── tests/
 │   ├── test_users.py
 │   ├── test_projects.py
-│   └── test_tasks.py
+│   ├── test_tasks.py
+│   └── test_relationships.py
 │
 ├── Pipfile
-├── README.md
-└── Pipfile.lock
-
-````
+├── Pipfile.lock
+└── README.md
+```
 
 ---
 
-## Installation
+##  Installation
 
 ### 1. Clone the repository
 
 ```bash
 git clone <your-repo-url>
 cd project-management-cli
-````
+```
 
 ---
 
@@ -94,7 +94,7 @@ pipenv shell
 
 ---
 
-##  Running the Application
+## Running the Application
 
 Run the CLI tool using:
 
@@ -102,11 +102,17 @@ Run the CLI tool using:
 python main.py <command> [options]
 ```
 
+Example:
+
+```bash
+python main.py add-user --name "Ngoyoni" --email "ngoyoni@mail.com"
+```
+
 ---
 
 ## Available Commands
 
-### User Commands
+###  User Commands
 
 ```bash
 add-user --name "Ngoyoni" --email "ngoyoni@mail.com"
@@ -115,7 +121,7 @@ list-users
 
 ---
 
-### Project Commands
+###  Project Commands
 
 ```bash
 add-project --user "Ngoyoni" --title "CLI Tool"
@@ -125,7 +131,7 @@ search-project --keyword "CLI"
 
 ---
 
-### Task Commands
+###  Task Commands
 
 ```bash
 add-task --project "CLI Tool" --title "Implement CLI Parser"
@@ -136,7 +142,7 @@ search-task --keyword "CLI"
 
 ---
 
-###  Dashboard
+### Dashboard
 
 ```bash
 dashboard
@@ -146,30 +152,32 @@ dashboard
 
 ##  Data Persistence
 
-All data is stored locally using JSON files:
+All application data is stored locally using JSON files:
 
 * `data/users.json`
 * `data/projects.json`
 * `data/tasks.json`
 
-Data is automatically loaded and saved using a dedicated storage layer.
+A lightweight storage layer handles all read/write operations.
 
 ---
 
 ##  Running Tests
 
-Run all tests using:
+Run all unit tests:
 
 ```bash
 pytest
 ```
 
-### Test Coverage
+###  Test Coverage
 
 * User creation & validation
-* Project creation & relationships
+* Project creation & user linking
 * Task lifecycle (create → complete)
-* OOP inheritance (BaseModel)
+* Cross-entity relationships
+* BaseModel inheritance checks
+* JSON persistence integrity
 
 ---
 
@@ -177,7 +185,9 @@ pytest
 
 The system follows a clean layered architecture:
 
-###  Models
+---
+
+###  Models Layer
 
 Defines core entities:
 
@@ -185,78 +195,89 @@ Defines core entities:
 * Project
 * Task
 
-All models inherit from **BaseModel**, which provides:
+All models inherit from:
 
-* Unique ID generation
-* Timestamp tracking
-* Shared serialization logic
+* `BaseModel` (provides ID + timestamps + serialization)
 
 ---
 
-###  Services
+###  Services Layer
 
-Business logic layer:
+Business logic lives here:
 
 * UserService
 * ProjectService
 * TaskService
 * DashboardService
 
+This layer handles:
+
+* validation
+* relationships
+* persistence
+* business rules
+
 ---
 
-### CLI Layer
+###  CLI Layer
 
 Handles:
 
-* Argument parsing (`argparse`)
-* Command routing
-* User interaction
+* argument parsing (`argparse`)
+* command routing
+* user input handling
 
 ---
 
 ### Storage Layer
 
-Handles:
+Responsible for:
 
-* JSON file reading/writing
-* Persistent data storage
+* reading JSON files
+* writing JSON files
+* maintaining persistent state
 
 ---
 
-###  Utils
+###  Utils Layer
+
+Utility helpers:
 
 * ID generation
-* Input validation (Pydantic)
+* validation logic (email + user validation)
 
 ---
 
 ##  Relationships
 
-*  A **User** has many Projects
-* A **Project** has many Tasks
+The system enforces clear relationships:
+
+* A **User** has many Projects
+* A **Project** belongs to a User
 * A **Task** belongs to a Project
 
 ---
 
-## Technologies Used
+##  Technologies Used
 
-* Python 3.12+
-* argparse (CLI system)
+* Python 3.14
+* argparse (CLI framework)
 * JSON (data storage)
-* rich (CLI formatting)
-* pytest (testing)
-* pydantic (validation)
+* rich (terminal UI formatting)
+* pytest (unit testing)
+* pydantic (validation layer)
 * pipenv (dependency management)
 
 ---
 
 ## Author
 
-Developed as part of a Python OOP + CLI assignment demonstrating:
+Developed as part of a Python OOP + CLI project demonstrating:
 
 * modular architecture
-* object-oriented design
-* real-world CLI system design
+* service-layer design
+* real-world CLI application structure
+* test-driven development (TDD-style refinement)
 
 ---
 
@@ -264,3 +285,4 @@ Developed as part of a Python OOP + CLI assignment demonstrating:
 
 This project is for educational purposes only.
 
+---
