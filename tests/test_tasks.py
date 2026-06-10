@@ -1,13 +1,14 @@
 from models.task import Task
 from models.base_model import BaseModel
 
-
 def test_create_task():
     task = Task("Build CLI", "123")
 
     assert task.title == "Build CLI"
     assert task.project_id == "123"
     assert task.status == "Pending"
+    assert task.id is not None
+    assert task.created_at is not None
 
 
 def test_complete_task():
@@ -29,6 +30,8 @@ def test_task_to_dict():
 
     data = task.to_dict()
 
+    assert isinstance(data, dict)
     assert data["title"] == "Build CLI"
     assert data["project_id"] == "123"
     assert data["status"] == "Pending"
+    assert "id" in data

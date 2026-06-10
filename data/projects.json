@@ -18,5 +18,10 @@
         "id": "d80b7e99-d1f6-404b-bcd3-8efa4e639db5",
         "title": "CLI Tool",
         "user_id": "11bcf744-727f-488d-8e86-a4efe778d417"
+    },
+    {
+        "id": "c6dd68a2-7b03-448c-95bc-c40bb2f7201c",
+        "title": "bookstays",
+        "user_id": "b4178125-3465-4f5a-ad81-74bb73629efe"
     }
 ]

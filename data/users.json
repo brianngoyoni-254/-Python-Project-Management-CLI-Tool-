@@ -8,5 +8,10 @@
         "id": "11bcf744-727f-488d-8e86-a4efe778d417",
         "name": "Brian",
         "email": "brian@mail.com"
+    },
+    {
+        "id": "b4178125-3465-4f5a-ad81-74bb73629efe",
+        "name": "Ngoyoni",
+        "email": "ngoyoni@example.com"
     }
 ]
