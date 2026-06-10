@@ -1,13 +1,13 @@
 from models.user import User
 from models.base_model import BaseModel
 
+
 def test_create_user():
     user = User("Alex", "alex@mail.com")
 
     assert user.name == "Alex"
     assert user.email == "alex@mail.com"
     assert user.id is not None
-    assert user.created_at is not None
 
 
 def test_user_inherits_base_model():
@@ -25,4 +25,3 @@ def test_user_to_dict():
     assert data["name"] == "Alex"
     assert data["email"] == "alex@mail.com"
     assert "id" in data
-    

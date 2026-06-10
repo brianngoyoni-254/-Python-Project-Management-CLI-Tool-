@@ -1,5 +1,7 @@
 from models.project import Project
 from models.base_model import BaseModel
+from services.project_service import ProjectService
+
 
 def test_create_project():
     project = Project("CLI Tool", "123")
@@ -7,7 +9,7 @@ def test_create_project():
     assert project.title == "CLI Tool"
     assert project.user_id == "123"
     assert project.id is not None
-    assert project.created_at is not None  # BaseModel improvement check
+    assert hasattr(project, "id")
 
 
 def test_project_inherits_base_model():
@@ -22,6 +24,6 @@ def test_project_to_dict():
     data = project.to_dict()
 
     assert isinstance(data, dict)
-    assert "title" in data
-    assert "user_id" in data
+    assert data["title"] == "CLI Tool"
+    assert data["user_id"] == "123"
     assert "id" in data

@@ -11,15 +11,18 @@ class UserService:
     def add_user(self, name, email):
         users = load(self.FILE)
 
-        # Pydantic validation step
+        # validation
         validated = validate_user(name, email)
 
         if not validated:
             print("[red]User not created due to invalid input[/red]")
             return
 
-        # Create user only after validation
-        user = User(validated.name, validated.email)
+        # validator returns dict
+        user = User(
+            validated["name"],
+            validated["email"]
+        )
 
         users.append(user.to_dict())
         save(self.FILE, users)

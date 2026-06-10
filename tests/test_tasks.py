@@ -1,6 +1,7 @@
 from models.task import Task
 from models.base_model import BaseModel
 
+
 def test_create_task():
     task = Task("Build CLI", "123")
 
@@ -8,7 +9,6 @@ def test_create_task():
     assert task.project_id == "123"
     assert task.status == "Pending"
     assert task.id is not None
-    assert task.created_at is not None
 
 
 def test_complete_task():

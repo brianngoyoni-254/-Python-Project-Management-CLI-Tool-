@@ -1,20 +1,23 @@
-from pydantic import BaseModel, EmailStr, ValidationError
-
-
-class UserValidator(BaseModel):
-    name: str
-    email: EmailStr
+def validate_email(email: str) -> bool:
+    """
+    Simple, safe email validation for CLI usage.
+    """
+    return isinstance(email, str) and "@" in email and "." in email
 
 
 def validate_user(name: str, email: str):
     """
-    Validates user input using Pydantic.
-    Raises error if invalid.
+    Lightweight validation wrapper used by services.
+    Returns a CLEAN dict OR None.
     """
-    try:
-        validated = UserValidator(name=name, email=email)
-        return validated
-    except ValidationError as e:
-        print("[red]Invalid user data:[/red]")
-        print(e)
+
+    if not name or not isinstance(name, str):
         return None
+
+    if not validate_email(email):
+        return None
+
+    return {
+        "name": name.strip(),
+        "email": email.strip()
+    }
