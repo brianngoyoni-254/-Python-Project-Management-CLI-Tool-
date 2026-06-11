@@ -12,7 +12,9 @@ dashboard_service = DashboardService()
 
 def handle_command(args):
 
-    # USER 
+    
+    # USER COMMANDS
+    
     if args.group == "user":
 
         if args.command == "add":
@@ -24,7 +26,9 @@ def handle_command(args):
         else:
             print("[red]Unknown user command[/red]")
 
-    # PROJECT 
+    
+    # PROJECT COMMANDS
+    
     elif args.group == "project":
 
         if args.command == "add":
@@ -39,17 +43,28 @@ def handle_command(args):
         else:
             print("[red]Unknown project command[/red]")
 
-    #  TASK
+    
+    # TASK COMMANDS
+    
     elif args.group == "task":
 
         if args.command == "add":
-            task_service.add_task_by_name(args.project, args.title)
+            task_service.add_task_by_name(
+                args.project,
+                args.title,
+                getattr(args, "due", None)
+            )
 
         elif args.command == "list":
-            task_service.list_tasks()
+            task_service.list_tasks(
+                overdue=getattr(args, "overdue", False),
+                due_soon=getattr(args, "due_soon", False),
+                completed=getattr(args, "completed", False),
+                pending=getattr(args, "pending", False)
+            )
 
         elif args.command == "complete":
-            task_service.complete_task(args.task)
+            task_service.complete_task(args.title)
 
         elif args.command == "search":
             task_service.search_task(args.keyword)
@@ -57,7 +72,9 @@ def handle_command(args):
         else:
             print("[red]Unknown task command[/red]")
 
-    # DASHBOARD 
+    
+    # DASHBOARD
+    
     elif args.group == "dashboard":
         dashboard_service.show_dashboard()
 

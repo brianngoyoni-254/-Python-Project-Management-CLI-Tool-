@@ -3,91 +3,235 @@ from models.task import Task
 from schemas.task_schema import TaskSchema
 from rich import print
 from rich.table import Table
-
+from datetime import datetime, date, timezone
 
 class TaskService:
     FILE = "tasks.json"
     PROJECT_FILE = "projects.json"
+    USER_FILE = "users.json"
 
+    
+    # HELPERS
+    
     def _find_project(self, project_name):
-        projects = load(self.PROJECT_FILE)
-
+        projects = load(self.PROJECT_FILE) or []
         for p in projects:
             if p.get("title", "").strip().lower() == project_name.strip().lower():
                 return p
-
         return None
 
-    def add_task_by_name(self, project_name, title):
-        tasks = load(self.FILE)
+    def _find_user(self, name):
+        users = load(self.USER_FILE) or []
+        for u in users:
+            if u.get("name", "").strip().lower() == name.strip().lower():
+                return u
+        return None
 
-        #  Pydantic validation
+    def _user_map(self):
+        users = load(self.USER_FILE) or []
+        return {u.get("id"): u.get("name") for u in users}
+
+    def _parse_date(self, d):
+        if not d:
+            return None
         try:
-            validated = TaskSchema(title=title, project_name=project_name)
-        except Exception as e:
-            print(f"[red]Invalid task input:[/red] {e}")
-            return False
+            return datetime.strptime(d, "%Y-%m-%d").date()
+        except:
+            return None
 
-        project = self._find_project(validated.project_name)
+    def _urgency(self, due):
+        if not due:
+            return "normal", "green"
 
+        try:
+            d = datetime.strptime(due, "%Y-%m-%d").date()
+        except:
+            return "normal", "green"
+
+        diff = (d - date.today()).days
+
+        if diff < 0:
+            return "overdue", "red"
+        elif diff <= 3:
+            return "due soon", "yellow"
+        return "normal", "green"
+
+    
+    # CREATE TASK
+    
+    def add_task_by_name(self, project_name, title, due_date=None):
+        tasks = load(self.FILE) or []
+
+        project = self._find_project(project_name)
         if not project:
             print(f"[red]Project not found:[/red] {project_name}")
             return False
 
-        task = Task(validated.title, project["id"])
+        project_id = project["id"]
+        assigned_user_id = project.get("user_id")
+
+        parsed_due = self._parse_date(due_date)
+
+        try:
+            validated = TaskSchema(
+                title=title,
+                project_id=project_id,
+                due_date=parsed_due
+            )
+        except Exception as e:
+            print(f"[red]Invalid task input:[/red] {e}")
+            return False
+
+        task = Task(
+            validated.title,
+            validated.project_id,
+            assigned_user_id=assigned_user_id,
+            due_date=validated.due_date
+        )
 
         tasks.append(task.to_dict())
         save(self.FILE, tasks)
 
+        user_map = self._user_map()
+
         print("\n[green]Task created successfully[/green]")
         print(f"[cyan]Title:[/cyan] {task.title}")
         print(f"[magenta]Project:[/magenta] {project_name}")
+        print(f"[blue]Assigned To:[/blue] {user_map.get(assigned_user_id, 'Unknown')}")
         print(f"[yellow]Status:[/yellow] {task.status}")
+
+        if task.due_date:
+            print(f"[blue]Due Date:[/blue] {task.due_date}")
 
         return True
 
-    def list_tasks(self, project_name=None):
-        tasks = load(self.FILE)
-        projects = load(self.PROJECT_FILE)
+    
+    # LIST TASKS (SMART FILTERS)
+    
+    def list_tasks(self, project=None, overdue=False, due_soon=False,
+                   completed=False, pending=False, assigned=None):
+
+        tasks = load(self.FILE) or []
+        projects = load(self.PROJECT_FILE) or []
+        users = load(self.USER_FILE) or []
 
         project_map = {p["id"]: p["title"] for p in projects}
+        user_map = {u["id"]: u["name"] for u in users}
 
-        table = Table(title="Tasks")
+        table = Table(title="Tasks (Smart View)")
         table.add_column("Title", style="green")
         table.add_column("Project", style="magenta")
+        table.add_column("Assigned To", style="cyan")
         table.add_column("Status", style="yellow")
+        table.add_column("Created At", style="cyan")
+        table.add_column("Due Date", style="cyan")
+        table.add_column("Urgency", style="bold")
 
-        found = 0
+        count = 0
 
         for t in tasks:
-            project_title = project_map.get(t["project_id"], "Unknown")
+            project_title = project_map.get(t.get("project_id"), "Unknown")
+            assignee = user_map.get(t.get("assigned_user_id"), "Unassigned")
 
-            if project_name is None or project_title.lower() == project_name.lower():
-                table.add_row(t["title"], project_title, t["status"])
-                found += 1
+            status = t.get("status", "Pending")
+            urgency, color = self._urgency(t.get("due_date"))
 
-        if found == 0:
+            # filters
+            if project and project_title.lower() != project.lower():
+                continue
+
+            if assigned and assignee.lower() != assigned.lower():
+                continue
+
+            if completed and status != "Done":
+                continue
+
+            if pending and status == "Done":
+                continue
+
+            if overdue and urgency != "overdue":
+                continue
+
+            if due_soon and urgency != "due soon":
+                continue
+
+            table.add_row(
+                t.get("title", ""),
+                project_title,
+                assignee,
+                status,
+                t.get("created_at", "-"),
+                t.get("due_date", "-"),
+                f"[{color}]{urgency}[/{color}]"
+            )
+
+            count += 1
+
+        if count == 0:
             print("[red]No tasks found[/red]")
             return []
 
         print(table)
         return tasks
 
+    
+    # COMPLETE
+    
     def complete_task(self, task_title):
-        tasks = load(self.FILE)
-
-        updated = False
+        tasks = load(self.FILE) or []
 
         for t in tasks:
-            if t["title"].strip().lower() == task_title.strip().lower():
+            if t.get("title", "").lower() == task_title.lower():
                 t["status"] = "Done"
-                updated = True
+                t["updated_at"] = datetime.utcnow().isoformat()
+                save(self.FILE, tasks)
+                print(f"[green]Task completed:[/green] {task_title}")
+                return True
 
-        save(self.FILE, tasks)
+        print("[red]Task not found[/red]")
+        return False
 
-        if updated:
-            print(f"[green]Task completed:[/green] {task_title}")
-            return True
+    
+    # DELETE TASK
+    
+    def delete_task(self, title):
+        tasks = load(self.FILE) or []
+
+        new_tasks = [t for t in tasks if t.get("title","").lower() != title.lower()]
+
+        if len(new_tasks) == len(tasks):
+            print("[red]Task not found[/red]")
+            return False
+
+        save(self.FILE, new_tasks)
+        print(f"[green]Task deleted:[/green] {title}")
+        return True
+
+    
+    # EDIT TASK
+    
+    def edit_task(self, title, new_title=None, due=None, assign=None):
+        tasks = load(self.FILE) or []
+
+        for t in tasks:
+            if t.get("title","").lower() == title.lower():
+
+                if new_title:
+                    t["title"] = new_title
+
+                if due:
+                    t["due_date"] = due
+
+                if assign:
+                    user = self._find_user(assign)
+                    if user:
+                        t["assigned_user_id"] = user["id"]
+
+                t["updated_at"] = datetime.utcnow().isoformat()
+
+                save(self.FILE, tasks)
+                print(f"[green]Task updated:[/green] {title}")
+                return True
 
         print("[red]Task not found[/red]")
         return False

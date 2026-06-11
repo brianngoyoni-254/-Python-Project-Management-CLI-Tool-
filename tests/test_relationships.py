@@ -12,6 +12,7 @@ def test_user_project_task_flow():
     # isolate test files
     user_service.FILE = "test_users.json"
     project_service.FILE = "test_projects.json"
+    project_service.USER_FILE = "test_users.json"  
     task_service.FILE = "test_tasks.json"
     task_service.PROJECT_FILE = "test_projects.json"
 
