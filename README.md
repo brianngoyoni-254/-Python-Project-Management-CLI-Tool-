@@ -1,31 +1,73 @@
-
----
-
 #  Project Management CLI Tool
 
-A Python-based Command-Line Interface (CLI) application for managing users, projects, and tasks in a structured multi-user system.
+A **Python-based Command-Line Interface (CLI) application** for managing users, projects, and tasks in a structured multi-user environment.
 
-The system demonstrates **Object-Oriented Programming (OOP)**, **service-layer architecture**, **file-based persistence (JSON)**, **input validation**, and **unit testing with pytest**.
+The project demonstrates **Object-Oriented Programming (OOP)**, **service-layer architecture**, **file-based persistence (JSON)**, **data relationships**, **input validation**, and **unit testing with `pytest`**.
+
+It is designed as a **real-world simulation of a lightweight project management system**.
 
 ---
 
 ##  Features
 
-*  Create and manage users
-* Create projects linked to users
-*  Create tasks linked to projects
+### User Management
+
+* Create users
+* List users
+* (Optional extension-ready: edit/delete users)
+
+###  Project Management
+
+* Create projects assigned to users
+* List projects per user
+* Search projects by keyword
+* (Optional extension-ready: edit/delete projects)
+
+### Task Management
+
+* Create tasks linked to projects
+* Assign tasks automatically via project-user relationship
 * Mark tasks as complete
-*  Search projects and tasks
-*  Dashboard-style summaries (optional module)
-*  JSON file persistence (local storage)
-*  Strong OOP design using `BaseModel`
-*  Unit testing with `pytest`
-*  Clean CLI output using `rich`
-*  Input validation using lightweight validators (Pydantic-based where applicable)
+* Smart filtering:
+
+  * Overdue tasks
+  * Due soon tasks (≤ 3 days)
+  * Completed / pending tasks
+  * Assigned user filtering
+* (Optional extension-ready: edit/delete tasks)
+
+###  Dashboard
+
+* System-wide analytics overview
+* Task urgency classification:
+
+  *  Overdue
+  *  Due soon
+  * Normal
+* Productivity score tracking
+* Summary of users, projects, and tasks
+
+### Data Persistence
+
+* Local JSON file storage
+* Automatic load/save layer abstraction
+* Persistent relationships across sessions
+
+###  CLI Experience
+
+* Clean terminal UI using `rich`
+* Structured tables and colored output
+* Human-readable task urgency system
+
+### Testing
+
+* Automated tests using `pytest`
+* Relationship validation (User → Project → Task flow)
+* CRUD lifecycle testing
 
 ---
 
-##  Project Structure
+##  Project Architecture
 
 ```
 project-management-cli/
@@ -33,14 +75,19 @@ project-management-cli/
 ├── main.py
 │
 ├── cli/
-│   ├── parser.py
-│   └── commands.py
+│   ├── parser.py          # argparse CLI structure
+│   └── commands.py        # command routing layer
 │
 ├── models/
-│   ├── base_model.py
+│   ├── base_model.py      # shared ID + timestamps
 │   ├── user.py
 │   ├── project.py
 │   └── task.py
+│
+├── schemas/
+│   ├── user_schema.py
+│   ├── project_schema.py
+│   └── task_schema.py
 │
 ├── services/
 │   ├── user_service.py
@@ -49,7 +96,7 @@ project-management-cli/
 │   └── dashboard_service.py
 │
 ├── storage/
-│   └── json_db.py
+│   └── json_db.py         # file I/O abstraction layer
 │
 ├── utils/
 │   ├── id_generator.py
@@ -73,9 +120,9 @@ project-management-cli/
 
 ---
 
-##  Installation
+## stallation
 
-### 1. Clone the repository
+### 1. Clone Repository
 
 ```bash
 git clone 
@@ -84,7 +131,7 @@ cd project-management-cli
 
 ---
 
-### 2. Install dependencies (Pipenv)
+### 2. Install Dependencies (Pipenv)
 
 ```bash
 pip install pipenv
@@ -94,29 +141,40 @@ pipenv shell
 
 ---
 
-## Running the Application
+### 3. Install Required Extras
 
-Run the CLI tool using:
+```bash
+pipenv install rich
+pipenv install "pydantic[email]"
+```
+
+---
+
+## ▶Running the Application
 
 ```bash
 python main.py <command> [options]
 ```
 
-Example:
+---
+
+### Example
 
 ```bash
-python main.py add-user --name "Ngoyoni" --email "ngoyoni@mail.com"
+python main.py user add --name "Alex" --email "alex@mail.com"
 ```
 
 ---
 
-## Available Commands
+##  CLI Commands
 
-###  User Commands
+---
+
+### User Commands
 
 ```bash
-add-user --name "Ngoyoni" --email "ngoyoni@mail.com"
-list-users
+user add --name "Alex" --email "alex@mail.com"
+user list
 ```
 
 ---
@@ -124,9 +182,9 @@ list-users
 ###  Project Commands
 
 ```bash
-add-project --user "Ngoyoni" --title "CLI Tool"
-list-projects --user "Ngoyoni"
-search-project --keyword "CLI"
+project add --user "Alex" --title "CLI Tool"
+project list --user "Alex"
+project search --keyword "CLI"
 ```
 
 ---
@@ -134,10 +192,13 @@ search-project --keyword "CLI"
 ###  Task Commands
 
 ```bash
-add-task --project "CLI Tool" --title "Implement CLI Parser"
-list-tasks --project "CLI Tool"
-complete-task --task "Implement CLI Parser"
-search-task --keyword "CLI"
+task add --project "CLI Tool" --title "Build CLI parser" --due 2026-06-15
+task list --project "CLI Tool"
+task list --overdue
+task list --due-soon
+task list --assigned "Alex"
+task complete --title "Build CLI parser"
+task search --keyword "parser"
 ```
 
 ---
@@ -150,111 +211,60 @@ dashboard
 
 ---
 
-##  Data Persistence
+## Data Persistence
 
-All application data is stored locally using JSON files:
+All data is stored locally in JSON format:
 
-* `data/users.json`
-* `data/projects.json`
-* `data/tasks.json`
+```
+data/users.json
+data/projects.json
+data/tasks.json
+```
 
-A lightweight storage layer handles all read/write operations.
+The system uses a centralized storage layer (`json_db.py`) to ensure:
+
+* consistent file access
+* safe read/write operations
+* structured persistence across all entities
 
 ---
 
 ##  Running Tests
 
-Run all unit tests:
-
 ```bash
 pytest
 ```
 
-###  Test Coverage
+### Test Coverage Includes:
 
-* User creation & validation
-* Project creation & user linking
+* User CRUD lifecycle
+* Project-user relationships
 * Task lifecycle (create → complete)
-* Cross-entity relationships
-* BaseModel inheritance checks
-* JSON persistence integrity
+* Cross-entity validation
+* Data persistence integrity
+* CLI workflow validation
 
 ---
 
-##  Architecture Overview
+##  System Design
 
-The system follows a clean layered architecture:
+###  Architecture Style
 
----
+The project follows a **layered architecture pattern**:
 
-###  Models Layer
-
-Defines core entities:
-
-* User
-* Project
-* Task
-
-All models inherit from:
-
-* `BaseModel` (provides ID + timestamps + serialization)
+* CLI Layer → input handling (argparse)
+* Service Layer → business logic
+* Model Layer → data structure + behavior
+* Storage Layer → persistence (JSON)
+* Schema Layer → validation (Pydantic)
 
 ---
 
-###  Services Layer
+###  Relationships
 
-Business logic lives here:
-
-* UserService
-* ProjectService
-* TaskService
-* DashboardService
-
-This layer handles:
-
-* validation
-* relationships
-* persistence
-* business rules
-
----
-
-###  CLI Layer
-
-Handles:
-
-* argument parsing (`argparse`)
-* command routing
-* user input handling
-
----
-
-### Storage Layer
-
-Responsible for:
-
-* reading JSON files
-* writing JSON files
-* maintaining persistent state
-
----
-
-###  Utils Layer
-
-Utility helpers:
-
-* ID generation
-* validation logic (email + user validation)
-
----
-
-##  Relationships
-
-The system enforces clear relationships:
-
-* A **User** has many Projects
-* A **Project** belongs to a User
-* A **Task** belongs to a Project
+* User → Projects (1-to-many)
+* Project → Tasks (1-to-many)
+* User →  Tasks (via project assignment)
 
 ---
 
@@ -265,24 +275,35 @@ The system enforces clear relationships:
 * JSON (data storage)
 * rich (terminal UI formatting)
 * pytest (unit testing)
-* pydantic (validation layer)
+* pydantic (validation)
 * pipenv (dependency management)
 
 ---
 
-## Author
+## Key Design Highlights
 
-Developed as part of a Python OOP + CLI project demonstrating:
+* Clean separation of concerns
+* Reusable service-layer architecture
+* Real-world entity relationships
+* Smart task urgency system
+* Filterable CLI experience
+* Extensible CRUD design
 
-* modular architecture
-* service-layer design
-* real-world CLI application structure
-* test-driven development (TDD-style refinement)
+---
+
+##  Author
+
+Developed as part of a **Python OOP + CLI Systems Engineering Project**, demonstrating:
+
+* real-world backend architecture design
+* modular Python development
+* CLI application engineering
+* test-driven development practices
 
 ---
 
 ## License
 
-This project is for educational purposes only.
+This project is intended for **educational and academic use only**.
 
 ---
