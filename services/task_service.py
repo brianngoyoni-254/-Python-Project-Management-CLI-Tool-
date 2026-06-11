@@ -11,8 +11,7 @@ class TaskService:
     PROJECT_FILE = "projects.json"
     USER_FILE = "users.json"
 
-    
-    # HELPERS
+    #  HELPERS 
 
     def _find_project(self, project_name):
         projects = load(self.PROJECT_FILE) or []
@@ -20,7 +19,6 @@ class TaskService:
         for p in projects:
             if p.get("title", "").strip().lower() == project_name.strip().lower():
                 return p
-
         return None
 
     def _find_user(self, name):
@@ -29,7 +27,14 @@ class TaskService:
         for u in users:
             if u.get("name", "").strip().lower() == name.strip().lower():
                 return u
+        return None
 
+    def _find_user_by_id(self, user_id):
+        users = load(self.USER_FILE) or []
+
+        for u in users:
+            if u.get("id") == user_id:
+                return u
         return None
 
     def _user_map(self):
@@ -58,28 +63,21 @@ class TaskService:
 
         if diff < 0:
             return "overdue", "red"
-
         if diff <= 3:
             return "due soon", "yellow"
-
         return "normal", "green"
 
-    
-    # CREATE TASK
-
+    #  CREATE TASK 
 
     def add_task_by_name(self, project_name, title, due_date=None):
         tasks = load(self.FILE) or []
 
         project = self._find_project(project_name)
-
         if not project:
             print(f"[red]Project not found:[/red] {project_name}")
             return False
 
         project_id = project["id"]
-        assigned_user_id = project.get("user_id")
-
         parsed_due = self._parse_date(due_date)
 
         try:
@@ -88,15 +86,19 @@ class TaskService:
                 project_id=project_id,
                 due_date=parsed_due
             )
-
         except Exception as e:
             print(f"[red]Invalid task input:[/red] {e}")
             return False
 
+        assigned_user_ids = []
+
+        if project.get("user_id"):
+            assigned_user_ids.append(project["user_id"])
+
         task = Task(
             validated.title,
             validated.project_id,
-            assigned_user_id=assigned_user_id,
+            assigned_user_ids=assigned_user_ids,
             due_date=validated.due_date
         )
 
@@ -105,13 +107,14 @@ class TaskService:
 
         user_map = self._user_map()
 
+        assignees = ", ".join(
+            user_map.get(uid, "Unknown") for uid in assigned_user_ids
+        ) if assigned_user_ids else "Unassigned"
+
         print("\n[green]Task created successfully[/green]")
         print(f"[cyan]Title:[/cyan] {task.title}")
         print(f"[magenta]Project:[/magenta] {project_name}")
-        print(
-            f"[blue]Assigned To:[/blue] "
-            f"{user_map.get(assigned_user_id, 'Unknown')}"
-        )
+        print(f"[blue]Assigned To:[/blue] {assignees}")
         print(f"[yellow]Status:[/yellow] {task.status}")
 
         if task.due_date:
@@ -119,9 +122,7 @@ class TaskService:
 
         return True
 
-    
-    # LIST TASKS
-    
+    # LIST TASKS 
 
     def list_tasks(
         self,
@@ -134,13 +135,11 @@ class TaskService:
     ):
         tasks = load(self.FILE) or []
         projects = load(self.PROJECT_FILE) or []
-        users = load(self.USER_FILE) or []
 
         project_map = {p["id"]: p["title"] for p in projects}
-        user_map = {u["id"]: u["name"] for u in users}
+        user_map = self._user_map()
 
         table = Table(title="Tasks (Smart View)")
-
         table.add_column("Title", style="green")
         table.add_column("Project", style="magenta")
         table.add_column("Assigned To", style="cyan")
@@ -152,16 +151,16 @@ class TaskService:
         filtered = []
 
         for t in tasks:
+            project_title = project_map.get(t.get("project_id"), "Unknown")
 
-            project_title = project_map.get(
-                t.get("project_id"),
-                "Unknown"
-            )
+            # SAFE NORMALIZATION 
+            assigned_ids = t.get("assigned_user_ids") or []
+            if not isinstance(assigned_ids, list):
+                assigned_ids = [assigned_ids]
 
-            assignee = user_map.get(
-                t.get("assigned_user_id"),
-                "Unassigned"
-            )
+            assignees = ", ".join(
+                user_map.get(uid, "Unknown") for uid in assigned_ids
+            ) if assigned_ids else "Unassigned"
 
             status = t.get("status", "Pending")
             urgency, color = self._urgency(t.get("due_date"))
@@ -169,7 +168,7 @@ class TaskService:
             if project and project_title.lower() != project.lower():
                 continue
 
-            if assigned and assignee.lower() != assigned.lower():
+            if assigned and assigned.lower() not in assignees.lower():
                 continue
 
             if completed and status != "Done":
@@ -189,10 +188,10 @@ class TaskService:
             table.add_row(
                 t.get("title", ""),
                 project_title,
-                assignee,
+                assignees,
                 status,
                 t.get("created_at", "-"),
-                t.get("due_date", "-"),
+                str(t.get("due_date", "-")),
                 f"[{color}]{urgency}[/{color}]"
             )
 
@@ -203,17 +202,14 @@ class TaskService:
         print(table)
         return filtered
 
-
-    # SEARCH TASKS
-    
+    #SEARCH 
 
     def search_task(self, keyword):
         tasks = load(self.FILE) or []
         projects = load(self.PROJECT_FILE) or []
-        users = load(self.USER_FILE) or []
 
-        project_map = {p["id"]: p["title"] for p in projects}
-        user_map = {u["id"]: u["name"] for u in users}
+        project_map = {p["id"]: p["title"] for p in projects}  # FIXED NAME BUG
+        user_map = self._user_map()
 
         matches = []
 
@@ -222,9 +218,7 @@ class TaskService:
                 matches.append(t)
 
         if not matches:
-            print(
-                f"[red]No tasks found matching '{keyword}'[/red]"
-            )
+            print(f"[red]No tasks found matching '{keyword}'[/red]")
             return []
 
         table = Table(title=f"Task Search Results: {keyword}")
@@ -236,59 +230,43 @@ class TaskService:
         table.add_column("Due Date", style="blue")
 
         for t in matches:
+            assigned_ids = t.get("assigned_user_ids") or []
+            if not isinstance(assigned_ids, list):
+                assigned_ids = [assigned_ids]
+
+            assignees = ", ".join(
+                user_map.get(uid, "Unknown") for uid in assigned_ids
+            ) if assigned_ids else "Unassigned"
+
             table.add_row(
                 t.get("title", ""),
-                project_map.get(
-                    t.get("project_id"),
-                    "Unknown"
-                ),
-                user_map.get(
-                    t.get("assigned_user_id"),
-                    "Unassigned"
-                ),
+                project_map.get(t.get("project_id"), "Unknown"),
+                assignees,
                 t.get("status", "Pending"),
                 str(t.get("due_date", "-"))
             )
 
         print(table)
-
         return matches
 
-    
-    # COMPLETE TASK
-    
+    # COMPLETE 
 
     def complete_task(self, task_title):
         tasks = load(self.FILE) or []
 
         for t in tasks:
-
-            if (
-                t.get("title", "").strip().lower()
-                == task_title.strip().lower()
-            ):
-
+            if t.get("title", "").strip().lower() == task_title.strip().lower():
                 t["status"] = "Done"
-
-                t["updated_at"] = (
-                    datetime.now(timezone.utc).isoformat()
-                )
+                t["updated_at"] = datetime.now(timezone.utc).isoformat()
 
                 save(self.FILE, tasks)
-
-                print(
-                    f"[green]Task completed:[/green] "
-                    f"{task_title}"
-                )
-
+                print(f"[green]Task completed:[/green] {task_title}")
                 return True
 
         print("[red]Task not found[/red]")
         return False
 
-    
-    # DELETE TASK
-    
+    # DELETE 
 
     def delete_task(self, title):
         tasks = load(self.FILE) or []
@@ -303,30 +281,16 @@ class TaskService:
             return False
 
         save(self.FILE, new_tasks)
-
         print(f"[green]Task deleted:[/green] {title}")
-
         return True
 
-    
-    # EDIT TASK
-    
+    # EDIT 
 
-    def edit_task(
-        self,
-        title,
-        new_title=None,
-        due=None,
-        assign=None
-    ):
+    def edit_task(self, title, new_title=None, due=None, assign=None):
         tasks = load(self.FILE) or []
 
         for t in tasks:
-
-            if (
-                t.get("title", "").lower()
-                == title.lower()
-            ):
+            if t.get("title", "").lower() == title.lower():
 
                 if new_title:
                     t["title"] = new_title
@@ -335,27 +299,51 @@ class TaskService:
                     t["due_date"] = due
 
                 if assign:
-
                     user = self._find_user(assign)
-
                     if not user:
-                        print(
-                            f"[red]User not found:[/red] {assign}"
-                        )
+                        print(f"[red]User not found:[/red] {assign}")
                         return False
 
-                    t["assigned_user_id"] = user["id"]
+                    uid = user["id"]
 
-                t["updated_at"] = (
-                    datetime.now(timezone.utc).isoformat()
-                )
+                    t.setdefault("assigned_user_ids", [])
+
+                    if uid not in t["assigned_user_ids"]:
+                        t["assigned_user_ids"].append(uid)
+
+                t["updated_at"] = datetime.now(timezone.utc).isoformat()
 
                 save(self.FILE, tasks)
+                print(f"[green]Task updated:[/green] {title}")
+                return True
 
-                print(
-                    f"[green]Task updated:[/green] {title}"
-                )
+        print("[red]Task not found[/red]")
+        return False
 
+    #  ADD CONTRIBUTOR 
+
+    def add_contributor(self, task_title, user_name):
+        tasks = load(self.FILE) or []
+        user = self._find_user(user_name)
+
+        if not user:
+            print(f"[red]User not found:[/red] {user_name}")
+            return False
+
+        uid = user["id"]
+
+        for t in tasks:
+            if t.get("title", "").lower() == task_title.lower():
+
+                t.setdefault("assigned_user_ids", [])
+
+                if uid not in t["assigned_user_ids"]:
+                    t["assigned_user_ids"].append(uid)
+
+                t["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+                save(self.FILE, tasks)
+                print(f"[green]Contributor added:[/green] {user_name} → {task_title}")
                 return True
 
         print("[red]Task not found[/red]")

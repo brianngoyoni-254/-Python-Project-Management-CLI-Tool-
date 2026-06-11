@@ -7,7 +7,7 @@ class Task(BaseModel):
         self,
         title,
         project_id,
-        assigned_user_id=None,
+        assigned_user_ids=None,
         due_date=None,
         status="Pending"
     ):
@@ -15,13 +15,14 @@ class Task(BaseModel):
 
         self._title = title
         self._project_id = project_id
-        self._assigned_user_id = assigned_user_id
+
+        # MANY-TO-MANY (always a list)
+        self._assigned_user_ids = list(assigned_user_ids or [])
+
         self._status = status
         self._due_date = due_date
 
-    
-    # PROPERTIES
-
+    # ================= PROPERTIES =================
 
     @property
     def title(self):
@@ -32,8 +33,8 @@ class Task(BaseModel):
         return self._project_id
 
     @property
-    def assigned_user_id(self):
-        return self._assigned_user_id
+    def assigned_user_ids(self):
+        return self._assigned_user_ids
 
     @property
     def status(self):
@@ -43,13 +44,17 @@ class Task(BaseModel):
     def due_date(self):
         return self._due_date
 
-    
-    # MUTATORS
-    
+    # ================= MUTATORS =================
 
     def assign_user(self, user_id):
-        self._assigned_user_id = user_id
-        self.touch()
+        if user_id not in self._assigned_user_ids:
+            self._assigned_user_ids.append(user_id)
+            self.touch()
+
+    def remove_user(self, user_id):
+        if user_id in self._assigned_user_ids:
+            self._assigned_user_ids.remove(user_id)
+            self.touch()
 
     def update_title(self, title):
         self._title = title
@@ -63,9 +68,7 @@ class Task(BaseModel):
         self._status = "Done"
         self.touch()
 
-    
-    # SERIALIZATION
-    
+    # ================= SERIALIZATION =================
 
     def to_dict(self):
         data = super().to_dict()
@@ -74,7 +77,7 @@ class Task(BaseModel):
             **data,
             "title": self._title,
             "project_id": self._project_id,
-            "assigned_user_id": self._assigned_user_id,
+            "assigned_user_ids": self._assigned_user_ids,
             "status": self._status,
             "due_date": (
                 self._due_date.isoformat()
@@ -82,10 +85,6 @@ class Task(BaseModel):
                 else self._due_date
             )
         }
-
-
-    # STRING REPRESENTATION
-    
 
     def __str__(self):
         return (

@@ -1,15 +1,12 @@
 from storage.json_db import load
 from rich import print
 from rich.table import Table
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 import json
 
 
 class DashboardService:
 
-    
-    # HELPERS
-    
     def _parse_date(self, d):
         if not d:
             return None
@@ -45,9 +42,6 @@ class DashboardService:
         done = len([t for t in tasks if t.get("status") == "Done"])
         return round(done / len(tasks) * 100, 2)
 
-    
-    # DASHBOARD
-    
     def show_dashboard(self):
 
         users = load("users.json") or []
@@ -59,20 +53,18 @@ class DashboardService:
         user_map = {u["id"]: u["name"] for u in users}
         project_map = {p["id"]: p["title"] for p in projects}
 
-        # SORT BY URGENCY
-        def sort_key(t):
-            urgency, _ = self._get_urgency(t.get("due_date"))
-            return {"overdue": 0, "due soon": 1, "normal": 2}.get(urgency, 2)
-
-        tasks_sorted = sorted(tasks, key=sort_key)
+        # normalize task users 
+        for t in tasks:
+            if not isinstance(t.get("assigned_user_ids"), list):
+                t["assigned_user_ids"] = []
 
         # SUMMARY
         total = len(tasks)
         done = len([t for t in tasks if t.get("status") == "Done"])
 
         summary = Table(title="Summary")
-        summary.add_column("Metric", style="cyan")
-        summary.add_column("Value", style="green")
+        summary.add_column("Metric")
+        summary.add_column("Value")
 
         summary.add_row("Users", str(len(users)))
         summary.add_row("Projects", str(len(projects)))
@@ -107,23 +99,29 @@ class DashboardService:
 
         print(project_table)
 
-        # TASKS SMART VIEW
+        # TASKS
         task_table = Table(title="Tasks (Smart View)")
-        task_table.add_column("Title", style="green")
-        task_table.add_column("Project", style="magenta")
-        task_table.add_column("Assigned To", style="cyan")
-        task_table.add_column("Status", style="yellow")
-        task_table.add_column("Created At", style="cyan")
-        task_table.add_column("Due Date", style="cyan")
-        task_table.add_column("Urgency", style="bold")
+        task_table.add_column("Title")
+        task_table.add_column("Project")
+        task_table.add_column("Assigned To")
+        task_table.add_column("Status")
+        task_table.add_column("Created At")
+        task_table.add_column("Due Date")
+        task_table.add_column("Urgency")
 
-        for t in tasks_sorted:
+        for t in tasks:
+            assigned_ids = t.get("assigned_user_ids") or []
+            if not isinstance(assigned_ids, list):
+                assigned_ids = [assigned_ids]
+
+            assignees = ", ".join(user_map.get(uid, "Unknown") for uid in assigned_ids) or "Unassigned"
+
             urgency, color = self._get_urgency(t.get("due_date"))
 
             task_table.add_row(
                 t.get("title", ""),
                 project_map.get(t.get("project_id"), "Unknown"),
-                user_map.get(t.get("assigned_user_id"), "Unknown"),
+                assignees,
                 t.get("status", "Pending"),
                 self._format(t.get("created_at")),
                 self._format(t.get("due_date")),
@@ -132,9 +130,6 @@ class DashboardService:
 
         print(task_table)
 
-    
-    # EXPORT REPORT
-    
     def export_weekly_report(self):
         tasks = load("tasks.json") or []
 

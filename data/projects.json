@@ -1,16 +1,9 @@
 [
     {
-        "id": "9692270b-f01b-4686-b072-1d993cb47d2a",
-        "created_at": "2026-06-11T12:31:35.438689",
-        "updated_at": "2026-06-11T12:31:35.438689",
-        "title": "CLI System",
-        "user_id": "eb13ff5b-f786-4098-acfa-e42dd92fbd08"
-    },
-    {
-        "id": "e5fa220c-40fd-4850-b578-3e52bfa95e4e",
-        "created_at": "2026-06-11T12:31:52.471474",
-        "updated_at": "2026-06-11T12:31:52.471474",
-        "title": "Task Manager App",
-        "user_id": "388e7ef5-6228-4587-a745-e21490ba886c"
+        "id": "dbd4e4d1-5a13-4c80-a590-a963ed770282",
+        "created_at": "2026-06-11T18:11:17.781633",
+        "updated_at": "2026-06-11T18:11:17.781633",
+        "title": "AI System",
+        "user_id": "603cee6d-f1cf-4b3e-a098-7dfdb431459c"
     }
 ]

@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-email-validator = "*"
-rich = "*"
-pydantic = {extras = ["email"], version = "*"}
 pytest = "*"
+rich = "*"
+email-validator = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 
