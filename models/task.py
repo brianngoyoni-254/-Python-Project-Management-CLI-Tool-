@@ -15,14 +15,11 @@ class Task(BaseModel):
 
         self._title = title
         self._project_id = project_id
-
-        # MANY-TO-MANY (always a list)
         self._assigned_user_ids = list(assigned_user_ids or [])
-
-        self._status = status
         self._due_date = due_date
+        self._status = status
 
-    # ================= PROPERTIES =================
+    # ================= GETTERS =================
 
     @property
     def title(self):
@@ -44,7 +41,7 @@ class Task(BaseModel):
     def due_date(self):
         return self._due_date
 
-    # ================= MUTATORS =================
+    # ================= BEHAVIOR =================
 
     def assign_user(self, user_id):
         if user_id not in self._assigned_user_ids:
@@ -68,7 +65,7 @@ class Task(BaseModel):
         self._status = "Done"
         self.touch()
 
-    # ================= SERIALIZATION =================
+    # SERIALIZATION 
 
     def to_dict(self):
         data = super().to_dict()
@@ -87,11 +84,7 @@ class Task(BaseModel):
         }
 
     def __str__(self):
-        return (
-            f"Task(title='{self._title}', "
-            f"status='{self._status}', "
-            f"project_id='{self._project_id}')"
-        )
+        return f"Task(title='{self._title}', status='{self._status}', project_id='{self._project_id}')"
 
     def __repr__(self):
         return self.__str__()

@@ -8,7 +8,7 @@ class BaseModel:
         self._created_at = datetime.now().isoformat()
         self._updated_at = self._created_at
 
-    # 🔹 getters (encapsulation)
+    # getters (encapsulation)
     @property
     def id(self):
         return self._id
@@ -21,7 +21,7 @@ class BaseModel:
     def updated_at(self):
         return self._updated_at
 
-    # 🔹 update lifecycle tracking
+    # lifecycle tracking
     def touch(self):
         self._updated_at = datetime.now().isoformat()
 
