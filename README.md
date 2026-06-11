@@ -120,7 +120,7 @@ project-management-cli/
 
 ---
 
-## stallation
+## Installation
 
 ### 1. Clone Repository
 
@@ -150,7 +150,7 @@ pipenv install "pydantic[email]"
 
 ---
 
-## ▶Running the Application
+## Running the Application
 
 ```bash
 python main.py <command> [options]
