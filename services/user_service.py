@@ -1,6 +1,6 @@
 from storage.json_db import load, save
 from models.user import User
-from utils.validators import validate_user
+from schemas.user_schema import UserSchema
 from rich import print
 from rich.table import Table
 
@@ -11,18 +11,14 @@ class UserService:
     def add_user(self, name, email):
         users = load(self.FILE)
 
-        # validation
-        validated = validate_user(name, email)
+        #  Pydantic validation layer
+        try:
+            validated = UserSchema(name=name, email=email)
+        except Exception as e:
+            print(f"[red]Invalid user input:[/red] {e}")
+            return False
 
-        if not validated:
-            print("[red]User not created due to invalid input[/red]")
-            return
-
-        # validator returns dict
-        user = User(
-            validated["name"],
-            validated["email"]
-        )
+        user = User(validated.name, str(validated.email))
 
         users.append(user.to_dict())
         save(self.FILE, users)
@@ -30,6 +26,8 @@ class UserService:
         print("\n[green]User created successfully[/green]")
         print(f"[cyan]Name:[/cyan] {user.name}")
         print(f"[magenta]Email:[/magenta] {user.email}")
+
+        return True
 
     def list_users(self):
         users = load(self.FILE)
