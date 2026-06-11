@@ -3,13 +3,25 @@ from datetime import date, datetime
 
 
 class Task(BaseModel):
-    def __init__(self, title, project_id, assigned_user_id=None, due_date=None):
+    def __init__(
+        self,
+        title,
+        project_id,
+        assigned_user_id=None,
+        due_date=None,
+        status="Pending"
+    ):
         super().__init__()
+
         self._title = title
         self._project_id = project_id
         self._assigned_user_id = assigned_user_id
-        self._status = "Pending"
+        self._status = status
         self._due_date = due_date
+
+    
+    # PROPERTIES
+
 
     @property
     def title(self):
@@ -31,15 +43,35 @@ class Task(BaseModel):
     def due_date(self):
         return self._due_date
 
+    
+    # MUTATORS
+    
+
+    def assign_user(self, user_id):
+        self._assigned_user_id = user_id
+        self.touch()
+
+    def update_title(self, title):
+        self._title = title
+        self.touch()
+
+    def update_due_date(self, due_date):
+        self._due_date = due_date
+        self.touch()
+
     def complete(self):
         self._status = "Done"
         self.touch()
 
+    
+    # SERIALIZATION
+    
+
     def to_dict(self):
-        base = super().to_dict()
+        data = super().to_dict()
 
         return {
-            **base,
+            **data,
             "title": self._title,
             "project_id": self._project_id,
             "assigned_user_id": self._assigned_user_id,
@@ -50,3 +82,17 @@ class Task(BaseModel):
                 else self._due_date
             )
         }
+
+
+    # STRING REPRESENTATION
+    
+
+    def __str__(self):
+        return (
+            f"Task(title='{self._title}', "
+            f"status='{self._status}', "
+            f"project_id='{self._project_id}')"
+        )
+
+    def __repr__(self):
+        return self.__str__()
