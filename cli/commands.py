@@ -2,9 +2,7 @@ from services.user_service import UserService
 from services.project_service import ProjectService
 from services.task_service import TaskService
 from services.dashboard_service import DashboardService
-
 from rich import print
-
 
 user_service = UserService()
 project_service = ProjectService()
@@ -14,47 +12,54 @@ dashboard_service = DashboardService()
 
 def handle_command(args):
 
-    
-    # USER COMMANDS
-    
-    if args.command == "add-user":
-        user_service.add_user(args.name, args.email)
+    # USER 
+    if args.group == "user":
 
-    elif args.command == "list-users":
-        user_service.list_users()
+        if args.command == "add":
+            user_service.add_user(args.name, args.email)
 
-    
-    # PROJECT COMMANDS
-    
-    elif args.command == "add-project":
-        project_service.add_project(args.user, args.title)
+        elif args.command == "list":
+            user_service.list_users()
 
-    elif args.command == "list-projects":
-        project_service.list_projects(args.user)
+        else:
+            print("[red]Unknown user command[/red]")
 
-    elif args.command == "search-project":
-        project_service.search_project(args.keyword)
+    # PROJECT 
+    elif args.group == "project":
 
-    
-    # TASK COMMANDS
-    
-    elif args.command == "add-task":
-        task_service.add_task_by_name(args.project, args.title)
+        if args.command == "add":
+            project_service.add_project(args.user, args.title)
 
-    elif args.command == "list-tasks":
-        task_service.list_tasks(args.project)
+        elif args.command == "list":
+            project_service.list_projects(args.user)
 
-    elif args.command == "complete-task":
-        task_service.complete_task(args.task)
+        elif args.command == "search":
+            project_service.search_project(args.keyword)
 
-    elif args.command == "search-task":
-        task_service.search_task(args.keyword)
+        else:
+            print("[red]Unknown project command[/red]")
 
-    
-    # DASHBOARD
-    
-    elif args.command == "dashboard":
+    #  TASK
+    elif args.group == "task":
+
+        if args.command == "add":
+            task_service.add_task_by_name(args.project, args.title)
+
+        elif args.command == "list":
+            task_service.list_tasks()
+
+        elif args.command == "complete":
+            task_service.complete_task(args.task)
+
+        elif args.command == "search":
+            task_service.search_task(args.keyword)
+
+        else:
+            print("[red]Unknown task command[/red]")
+
+    # DASHBOARD 
+    elif args.group == "dashboard":
         dashboard_service.show_dashboard()
 
     else:
-        print("[red]Unknown command[/red]")
+        print("[red]Unknown command group[/red]")

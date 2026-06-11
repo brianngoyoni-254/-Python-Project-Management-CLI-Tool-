@@ -6,49 +6,50 @@ def build_parser():
         description="Project Management CLI Tool"
     )
 
-    subparsers = parser.add_subparsers(dest="command")
+    subparsers = parser.add_subparsers(dest="group")
 
-    
-    # USER COMMANDS
-    
-    add_user = subparsers.add_parser("add-user")
-    add_user.add_argument("--name", required=True)
-    add_user.add_argument("--email", required=True)
+    #  USER GROUP 
+    user_parser = subparsers.add_parser("user")
+    user_sub = user_parser.add_subparsers(dest="command")
 
-    subparsers.add_parser("list-users")
+    user_add = user_sub.add_parser("add")
+    user_add.add_argument("--name", required=True)
+    user_add.add_argument("--email", required=True)
 
-    
-    # PROJECT COMMANDS
-    
-    add_project = subparsers.add_parser("add-project")
-    add_project.add_argument("--user", required=True)
-    add_project.add_argument("--title", required=True)
+    user_sub.add_parser("list")
 
-    list_projects = subparsers.add_parser("list-projects")
-    list_projects.add_argument("--user", required=False)
+    #  PROJECT GROUP 
+    project_parser = subparsers.add_parser("project")
+    project_sub = project_parser.add_subparsers(dest="command")
 
-    search_project = subparsers.add_parser("search-project")
-    search_project.add_argument("--keyword", required=True)
+    project_add = project_sub.add_parser("add")
+    project_add.add_argument("--user", required=True)
+    project_add.add_argument("--title", required=True)
 
-    
-    # TASK COMMANDS
-    
-    add_task = subparsers.add_parser("add-task")
-    add_task.add_argument("--project", required=True)
-    add_task.add_argument("--title", required=True)
+    project_list = project_sub.add_parser("list")
+    project_list.add_argument("--user", required=False)
 
-    list_tasks = subparsers.add_parser("list-tasks")
-    list_tasks.add_argument("--project", required=False)
+    project_search = project_sub.add_parser("search")
+    project_search.add_argument("--keyword", required=True)
 
-    complete_task = subparsers.add_parser("complete-task")
-    complete_task.add_argument("--task", required=True)
+    # TASK GROUP 
+    task_parser = subparsers.add_parser("task")
+    task_sub = task_parser.add_subparsers(dest="command")
 
-    search_task = subparsers.add_parser("search-task")
-    search_task.add_argument("--keyword", required=True)
+    task_add = task_sub.add_parser("add")
+    task_add.add_argument("--project", required=True)
+    task_add.add_argument("--title", required=True)
 
-    
-    # DASHBOARD
-    
-    subparsers.add_parser("dashboard")
+    task_sub.add_parser("list")
+
+    task_complete = task_sub.add_parser("complete")
+    task_complete.add_argument("--task", required=True)
+
+    task_search = task_sub.add_parser("search")
+    task_search.add_argument("--keyword", required=True)
+
+    # DASHBOARD 
+    dashboard_parser = subparsers.add_parser("dashboard")
+    dashboard_parser.add_argument("--show", action="store_true")
 
     return parser
