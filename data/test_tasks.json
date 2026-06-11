@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "id": "a8ae46cc-1de0-4ef4-a54b-0143c6abd7d3",
+        "created_at": "2026-06-11T19:14:53.662713",
+        "updated_at": "2026-06-11T16:14:53.670819+00:00",
+        "title": "Implement CLI",
+        "project_id": "a405ccda-1329-476a-af4b-f088c2863d00",
+        "assigned_user_ids": [
+            "d6405e06-0ae1-4851-aa28-3cbbac25a19d"
+        ],
+        "status": "Done",
+        "due_date": null
+    }
+]

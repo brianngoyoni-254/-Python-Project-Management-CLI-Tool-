@@ -1,137 +1,291 @@
-#  Project Management CLI Tool
 
-A **Python-based Command-Line Interface (CLI) application** for managing users, projects, and tasks in a structured multi-user environment.
+---
+# Project Management CLI Tool
 
-The project demonstrates **Object-Oriented Programming (OOP)**, **service-layer architecture**, **file-based persistence (JSON)**, **data relationships**, **input validation**, and **unit testing with `pytest`**.
+A powerful Python-based Command Line Interface (CLI) application for managing users, projects, and tasks in a multi-user environment.
 
-It is designed as a **real-world simulation of a lightweight project management system**.
+The application demonstrates real-world software engineering concepts including:
+
+- Object-Oriented Programming (OOP)
+- Service Layer Architecture
+- JSON Data Persistence
+- Pydantic Validation
+- Many-to-Many Relationships/One-to-Many Relationships
+- Rich Terminal Interfaces
+- Automated Testing with Pytest
 
 ---
 
-##  Features
+# Features
 
-### User Management
+## User Management
 
-* Create users
-* List users
-* (Optional extension-ready: edit/delete users)
+Create and manage users in the system.
 
-###  Project Management
+### Supported Commands
 
-* Create projects assigned to users
-* List projects per user
-* Search projects by keyword
-* (Optional extension-ready: edit/delete projects)
+- Add User
+- List Users
+- Edit User
+- Delete User
 
-### Task Management
+Example:
 
-* Create tasks linked to projects
-* Assign tasks automatically via project-user relationship
-* Mark tasks as complete
-* Smart filtering:
-
-  * Overdue tasks
-  * Due soon tasks (≤ 3 days)
-  * Completed / pending tasks
-  * Assigned user filtering
-* (Optional extension-ready: edit/delete tasks)
-
-###  Dashboard
-
-* System-wide analytics overview
-* Task urgency classification:
-
-  *  Overdue
-  *  Due soon
-  * Normal
-* Productivity score tracking
-* Summary of users, projects, and tasks
-
-### Data Persistence
-
-* Local JSON file storage
-* Automatic load/save layer abstraction
-* Persistent relationships across sessions
-
-###  CLI Experience
-
-* Clean terminal UI using `rich`
-* Structured tables and colored output
-* Human-readable task urgency system
-
-### Testing
-
-* Automated tests using `pytest`
-* Relationship validation (User → Project → Task flow)
-* CRUD lifecycle testing
+```bash
+python main.py user add --name Ngoyoni --email ngoyoni@mail.com
+python main.py user list
+python main.py user edit --name Ngoyoni --new-name Brian
+python main.py user delete --name Brian
+````
 
 ---
 
-##  Project Architecture
+## Project Management
+
+Projects are owned by users.
+
+### Supported Commands
+
+* Create Project
+* List Projects
+* Search Projects
+* Edit Project
+* Delete Project
+
+Example:
+
+```bash
+python main.py project add --user Ngoyoni --title "AI System"
+python main.py project list
+python main.py project search --keyword "AI"
+python main.py project edit --title "AI System" --new-title "AI Platform"
+python main.py project delete --title "AI Platform"
+```
+
+---
+
+## Task Management
+
+Tasks belong to projects and support multiple contributors.
+
+### Features
+
+* Create Tasks
+* Edit Tasks
+* Delete Tasks
+* Search Tasks
+* Complete Tasks
+* Assign Due Dates
+* Track Task Urgency
+* Multiple Contributors (Many-to-Many)
+* Contributor Management
+
+---
+
+## Create Task
+
+```bash
+python main.py task add --project "AI System" --title "Build API"
+```
+
+With due date:
+
+```bash
+python main.py task add --project "AI System" --title "Train Model" --due 2026-06-13
+```
+
+---
+
+## List Tasks
+
+```bash
+python main.py task list
+python main.py task list --project "AI System"
+python main.py task list --completed
+python main.py task list --pending
+python main.py task list --overdue
+python main.py task list --due-soon
+python main.py task list --assigned Ngoyoni
+```
+
+---
+
+## Search Tasks
+
+```bash
+python main.py task search --keyword "Model"
+```
+
+---
+
+## Complete Task
+
+```bash
+python main.py task complete --title "Build API"
+```
+
+---
+
+## Edit Task
+
+```bash
+python main.py task edit --title "Build API" --new-title "Backend API"
+python main.py task edit --title "Train Model" --due 2026-06-13
+python main.py task edit --title "Train Model" --assign Ngoyoni
+```
+
+---
+
+## Add Contributor (Many-to-Many)
+
+```bash
+python main.py task add-contributor --title "Train Model" --user Ngoyoni
+python main.py task add-contributor --title "Train Model" --user Brian
+python main.py task add-contributor --title "Train Model" --user Ray
+```
+
+Example Result:
+
+```
+Train Model
+├── Ngoyoni
+├── Brian
+└── Ray
+```
+
+---
+
+## Delete Task
+
+```bash
+python main.py task delete --title "Build API"
+```
+
+---
+
+# Dashboard
+
+The dashboard provides system-wide analytics.
+
+```bash
+python main.py dashboard
+```
+
+## Dashboard Includes:
+
+* Total Users
+* Total Projects
+* Total Tasks
+* Completed Tasks
+* Productivity Score
+* User Overview
+* Project Overview
+* Smart Task View
+
+Example:
+
+```
+PROJECT MANAGEMENT DASHBOARD
+
+Users: 3
+Projects: 1
+Tasks: 4
+Completed: 1
+Productivity: 25%
+```
+
+---
+
+# Task Urgency System
+
+Tasks are automatically categorized:
+
+| Status   | Meaning       |
+| -------- | ------------- |
+| Overdue  | Past due date |
+| Due Soon | Within 3 days |
+| Normal   | Safe timeline |
+
+Example:
+
+```
+Train Model
+Due Date: 2026-06-13
+Urgency: due soon
+```
+
+---
+
+# Weekly Report Export
+
+Generate analytics report:
+
+```python
+from services.dashboard_service import DashboardService
+
+DashboardService().export_weekly_report()
+```
+
+Output file:
+
+```
+weekly_report.json
+```
+
+Includes:
+
+* Total tasks
+* Completed tasks
+* Pending tasks
+* Overdue tasks
+* Full task snapshot
+
+---
+
+# Data Persistence
+
+All data is stored locally using JSON files:
+
+```
+data/
+├── users.json
+├── projects.json
+├── tasks.json
+└── task_users.json
+```
+
+Data persists between runs.
+
+---
+
+# Project Structure
 
 ```
 project-management-cli/
 │
 ├── main.py
-│
 ├── cli/
-│   ├── parser.py          # argparse CLI structure
-│   └── commands.py        # command routing layer
-│
 ├── models/
-│   ├── base_model.py      # shared ID + timestamps
-│   ├── user.py
-│   ├── project.py
-│   └── task.py
-│
 ├── schemas/
-│   ├── user_schema.py
-│   ├── project_schema.py
-│   └── task_schema.py
-│
 ├── services/
-│   ├── user_service.py
-│   ├── project_service.py
-│   ├── task_service.py
-│   └── dashboard_service.py
-│
 ├── storage/
-│   └── json_db.py         # file I/O abstraction layer
-│
 ├── utils/
-│   ├── id_generator.py
-│   └── validators.py
-│
 ├── data/
-│   ├── users.json
-│   ├── projects.json
-│   └── tasks.json
-│
-├── tests/
-│   ├── test_users.py
-│   ├── test_projects.py
-│   ├── test_tasks.py
-│   └── test_relationships.py
-│
-├── Pipfile
-├── Pipfile.lock
-└── README.md
+└── tests/
 ```
 
 ---
 
-## Installation
+# Installation
 
-### 1. Clone Repository
+## Clone Repository
 
 ```bash
-git clone 
-cd project-management-cli
+git clone https://github.com/brianngoyoni-254/-Python-Project-Management-CLI-Tool-.git
+cd -Python-Project-Management-CLI-Tool-
 ```
 
----
-
-### 2. Install Dependencies (Pipenv)
+## Install Dependencies
 
 ```bash
 pip install pipenv
@@ -139,9 +293,7 @@ pipenv install
 pipenv shell
 ```
 
----
-
-### 3. Install Required Extras
+## Install Packages
 
 ```bash
 pipenv install rich
@@ -150,160 +302,100 @@ pipenv install "pydantic[email]"
 
 ---
 
-## Running the Application
+# Running the Application
 
 ```bash
-python main.py <command> [options]
+python main.py
 ```
 
----
-
-### Example
+Example:
 
 ```bash
-python main.py user add --name "Alex" --email "alex@mail.com"
+python main.py user add --name Ngoyoni --email ngoyoni@mail.com
 ```
 
 ---
 
-##  CLI Commands
+# Testing
 
----
-
-### User Commands
-
-```bash
-user add --name "Alex" --email "alex@mail.com"
-user list
-```
-
----
-
-###  Project Commands
-
-```bash
-project add --user "Alex" --title "CLI Tool"
-project list --user "Alex"
-project search --keyword "CLI"
-```
-
----
-
-###  Task Commands
-
-```bash
-task add --project "CLI Tool" --title "Build CLI parser" --due 2026-06-15
-task list --project "CLI Tool"
-task list --overdue
-task list --due-soon
-task list --assigned "Alex"
-task complete --title "Build CLI parser"
-task search --keyword "parser"
-```
-
----
-
-### Dashboard
-
-```bash
-dashboard
-```
-
----
-
-## Data Persistence
-
-All data is stored locally in JSON format:
-
-```
-data/users.json
-data/projects.json
-data/tasks.json
-```
-
-The system uses a centralized storage layer (`json_db.py`) to ensure:
-
-* consistent file access
-* safe read/write operations
-* structured persistence across all entities
-
----
-
-##  Running Tests
+Run tests:
 
 ```bash
 pytest
 ```
 
-### Test Coverage Includes:
+Result:
 
-* User CRUD lifecycle
-* Project-user relationships
-* Task lifecycle (create → complete)
-* Cross-entity validation
-* Data persistence integrity
-* CLI workflow validation
+```
+11 passed
+```
 
----
+Coverage:
 
-##  System Design
-
-###  Architecture Style
-
-The project follows a **layered architecture pattern**:
-
-* CLI Layer → input handling (argparse)
-* Service Layer → business logic
-* Model Layer → data structure + behavior
-* Storage Layer → persistence (JSON)
-* Schema Layer → validation (Pydantic)
+* User lifecycle
+* Project lifecycle
+* Task lifecycle
+* Relationships
+* Dashboard logic
+* Persistence layer
 
 ---
 
-###  Relationships
+# Technologies Used
+
+* Python 3.12+
+* argparse
+* rich
+* pydantic
+* pytest
+* pipenv
+* JSON storage
+
+---
+
+# Architecture
+
+```
+CLI Layer
+   ↓
+Command Layer
+   ↓
+Service Layer
+   ↓
+Model Layer
+   ↓
+Storage Layer
+```
+
+Benefits:
+
+* Clean separation of concerns
+* Easy testing
+* Scalable structure
+* Maintainable logic
+
+---
+
+# Relationships
 
 * User → Projects (1-to-many)
 * Project → Tasks (1-to-many)
-* User →  Tasks (via project assignment)
+* User ↔ Tasks (many-to-many)
 
 ---
 
-##  Technologies Used
+# Author
 
-* Python 3.14
-* argparse (CLI framework)
-* JSON (data storage)
-* rich (terminal UI formatting)
-* pytest (unit testing)
-* pydantic (validation)
-* pipenv (dependency management)
+**Ngoyoni**
 
----
+Software  Developer
 
-## Key Design Highlights
-
-* Clean separation of concerns
-* Reusable service-layer architecture
-* Real-world entity relationships
-* Smart task urgency system
-* Filterable CLI experience
-* Extensible CRUD design
+GitHub:
+[https://github.com/brianngoyoni-254](https://github.com/brianngoyoni-254)
 
 ---
 
-##  Author
+# License
 
-Developed as part of a **Python OOP + CLI Systems Engineering Project**, demonstrating:
+This project is for educational and portfolio use only.
 
-* real-world backend architecture design
-* modular Python development
-* CLI application engineering
-* test-driven development practices
-
----
-
-## License
-
-This project is intended for **educational and academic use only**.
-
----
