@@ -7,6 +7,8 @@ A powerful Python-based Command Line Interface (CLI) application for managing us
 The application demonstrates real-world software engineering concepts including:
 
 - Object-Oriented Programming (OOP)
+- Inheritance (BaseModel shared across all entities)
+- Encapsulation using private attributes and property getters
 - Service Layer Architecture
 - JSON Data Persistence
 - Pydantic Validation
@@ -376,6 +378,51 @@ Benefits:
 
 ---
 
+# Object-Oriented Design (OOP)
+
+This project properly demonstrates **inheritance and OOP principles**:
+
+### Base Class (Inheritance)
+
+All core models inherit from `BaseModel`:
+
+```python
+class BaseModel:
+    id
+    created_at
+    updated_at
+```
+
+### Child Classes
+
+* `User(BaseModel)`
+* `Project(BaseModel)`
+* `Task(BaseModel)`
+
+### What this demonstrates:
+
+* Code reuse through inheritance
+* Shared lifecycle tracking (created_at, updated_at)
+* Centralized ID generation
+* Encapsulation using private attributes
+* Method reuse (`to_dict`, `touch`)
+
+### Example:
+
+```text
+BaseModel
+   ↓
+User
+   ↓
+Project
+   ↓
+Task
+```
+
+This design reduces duplication and enforces consistency across all entities.
+
+---
+
 # Relationships
 
 * User → Projects (1-to-many)
@@ -388,7 +435,7 @@ Benefits:
 
 **Ngoyoni**
 
-Software  Developer
+Software Developer
 
 GitHub:
 [https://github.com/brianngoyoni-254](https://github.com/brianngoyoni-254)
@@ -399,3 +446,4 @@ GitHub:
 
 This project is for educational and portfolio use only.
 
+```
