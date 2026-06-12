@@ -26,5 +26,18 @@
         ],
         "status": "Pending",
         "due_date": null
+    },
+    {
+        "id": "8db9f361-e989-4f70-bdde-3961f7f8df37",
+        "created_at": "2026-06-12T07:42:13.551547",
+        "updated_at": "2026-06-12T05:04:19.831734+00:00",
+        "title": "Build CLI",
+        "project_id": "d491b984-032f-4002-8360-7e664c2c38ad",
+        "assigned_user_ids": [
+            "8543b280-4be5-4388-8cb3-8cf9da9dba51",
+            "603cee6d-f1cf-4b3e-a098-7dfdb431459c"
+        ],
+        "status": "Done",
+        "due_date": null
     }
 ]

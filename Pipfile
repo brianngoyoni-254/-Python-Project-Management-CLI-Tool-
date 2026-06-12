@@ -5,8 +5,8 @@ name = "pypi"
 
 [packages]
 pytest = "*"
-rich = "*"
 email-validator = "*"
+rich = "*"
 pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]

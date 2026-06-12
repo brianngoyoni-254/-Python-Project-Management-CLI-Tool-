@@ -41,7 +41,7 @@ class Task(BaseModel):
     def due_date(self):
         return self._due_date
 
-    # ================= BEHAVIOR =================
+
 
     def assign_user(self, user_id):
         if user_id not in self._assigned_user_ids:

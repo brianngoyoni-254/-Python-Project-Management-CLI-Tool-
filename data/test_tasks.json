@@ -1,12 +1,12 @@
 [
     {
-        "id": "a8ae46cc-1de0-4ef4-a54b-0143c6abd7d3",
-        "created_at": "2026-06-11T19:14:53.662713",
-        "updated_at": "2026-06-11T16:14:53.670819+00:00",
+        "id": "2986bf5e-0a1f-4c1b-9e6b-9563ca7ed0bc",
+        "created_at": "2026-06-11T21:27:57.314340",
+        "updated_at": "2026-06-11T18:27:57.326152+00:00",
         "title": "Implement CLI",
-        "project_id": "a405ccda-1329-476a-af4b-f088c2863d00",
+        "project_id": "0787dcb2-f7e0-4fd7-b509-25eb783ee1b4",
         "assigned_user_ids": [
-            "d6405e06-0ae1-4851-aa28-3cbbac25a19d"
+            "b8e2778f-a3b1-4a3d-a8ff-8ef21805cc6e"
         ],
         "status": "Done",
         "due_date": null
